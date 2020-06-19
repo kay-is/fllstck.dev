@@ -1,49 +1,72 @@
-<!doctype html>
+<!DOCTYPE html>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="monetization" content="$ilp.uphold.com/AnaKEiL6diG9">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="monetization" content="$ilp.uphold.com/AnaKEiL6diG9" />
 
 <title>Fullstack Frontend</title>
 
-<link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+<link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css" />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css"
+/>
 
 <h1>Fullstack Frontend</h1>
 
 <p>
   Frontend is the new fullstack.🏙️
-  <br><br>
+  <br /><br />
   Talking about tech that empowers frontend developers!☁️
 </p>
 
 <h2>Articles</h2>
+<div id="tags"></div>
 <div id="articles">Loading...</div>
 
 <h2>Social Media</h2>
 
-<a href="https://coil.com/u/fllstck"><h3>Coil (Web Monetization)</h3></a>
+<a href="https://coil.com/u/fllstck"><h3>Coil</h3></a>
 <a href="https://blog.fllstck.dev"><h3>Dev.to</h3></a>
 <a href="https://twitter.fllstck.dev"><h3>Twitter</h3></a>
 <a href="https://instagram.fllstck.dev"><h3>Instagram</h3></a>
 
 <script>
+  const tagsDiv = document.getElementById("tags");
   const articlesDiv = document.getElementById("articles");
-  fetch(`https://dev.to/api/articles?username=fllstck`)
-  .then(r => r.json())
-  .then(posts =>
-    posts
+
+  getArticles();
+
+  window.addEventListener("hashchange", getArticles, false);
+
+  async function getArticles() {
+    const tag = location.hash.substr(1);
+
+    const response = await fetch(
+      "https://dev.to/api/articles?username=fllstck"
+    );
+    const articles = await response.json();
+
+    const tags = [...new Set(articles.map(a => a.tag_list).flat())];
+    tagsDiv.innerHTML =
+      `<a href="#">#all</a> - ` +
+      tags.map(t => `<a href="#${t}">#${t}</a>`).join(" - ");
+
+    const filteredArticles = tag
+      ? articles.filter(article => article.tag_list.includes(tag))
+      : articles;
+
+    articlesDiv.innerHTML = filteredArticles
       .map(
-        post => `
-      <a href="${post.url}">
-        <img src="${post.cover_image}" style="width: 100%">
-      </a>
-      <h3>${post.title}</h3>
-      <p>Tags: ${post.tag_list.join(", ")}</p>
-      <p>${post.description}</p>
-  `
+        article => `
+       <h3>${article.title}</h3>
+       <a href="${article.url}">
+         <img src="${article.cover_image}" style="width: 100%">
+       </a>
+       <p>${article.tag_list.map(t => `<i>#${t}</i>`).join(" - ")}</p>
+       <p>${article.description}</p>
+   `
       )
-      .join("<hr>")
-  )
-  .then(html => (articlesDiv.innerHTML = html));
+      .join("<hr>");
+  }
 </script>
